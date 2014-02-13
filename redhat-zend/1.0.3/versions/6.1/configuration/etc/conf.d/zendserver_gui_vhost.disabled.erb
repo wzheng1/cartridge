@@ -1,0 +1,28 @@
+# Warning:
+# Modifying this file will break the Zend Server Console (Administration Interface)
+
+#Listen <%= "#{ENV['OPENSHIFT_ZEND_IP']}:#{ENV['OPENSHIFT_ZEND_CONSOLE_PORT']}" %>
+#NameVirtualHost <%= "#{ENV['OPENSHIFT_ZEND_IP']}:#{ENV['OPENSHIFT_ZEND_CONSOLE_PORT']}" %>
+# do not allow override of this value for the UI's Vhost as it should
+# always be off when generating non-html content such as dynamic images
+#<VirtualHost *:<%= ENV['OPENSHIFT_ZEND_CONSOLE_PORT'] %>>
+    Alias /ZendServer "<%= ENV['OPENSHIFT_ZEND_DIR'] %>php-5.4/gui/public"
+    DocumentRoot "<%= ENV['OPENSHIFT_ZEND_DIR'] %>php-5.4/gui/public"
+    RewriteEngine On 
+    RewriteRule ^/$ /ZendServer/ 
+    RewriteRule ^/Login$ /ZendServer/Login 
+#  ErrorLog "<%= "|/usr/sbin/rotatelogs #{ENV['OPENSHIFT_ZEND_DIR']}logs/gui_vhost_error_log-%Y%m%d-%H%M%S-%Z 86400" %>"
+#  CustomLog "<%= "|/usr/sbin/rotatelogs #{ENV['OPENSHIFT_ZEND_DIR']}logs/gui_vhost_access_log-%Y%m%d-%H%M%S-%Z 86400" %>" combined
+
+    <Directory "<%= ENV['OPENSHIFT_ZEND_DIR'] %>php-5.4/gui/public">
+    RewriteEngine On 
+    RewriteCond %{REQUEST_FILENAME} -s [OR]
+    RewriteCond %{REQUEST_FILENAME} -l [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^.*$ - [NC,L]
+    RewriteRule ^.*$ index.php [NC,L]
+
+        AllowOverride All
+        Allow from all
+    </Directory>
+#</VirtualHost>

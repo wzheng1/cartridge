@@ -1,0 +1,76 @@
+#!/bin/bash -e
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+function _are_cronjobs_enabled() {
+   [ -f $OPENSHIFT_CRON_DIR/run/jobs.enabled ]  &&  return 0
+   return 1
+
+}  #  End of function  _are_cronjobs_enabled.
+
+function _status_cron_service() {
+    if output=$(run_as_user "$CTL_SCRIPT status" 2>&1)
+    then
+        client_result "$output"
+    else
+        client_result "Cron is either stopped or inaccessible for gear $OPENSHIFT_GEAR_UUID"
+    fi
+}  #  End of function  _status_cron_service.
+
+function start() {
+    echo "Starting Cron cartridge"
+    if _are_cronjobs_enabled; then
+        client_result "cron scheduling service is already enabled for gear $OPENSHIFT_GEAR_UUID"
+    else
+        touch "$OPENSHIFT_CRON_DIR/run/jobs.enabled"
+    fi
+}
+
+function stop() {
+    echo "Stopping Cron cartridge"
+    if _are_cronjobs_enabled; then
+        rm -f $OPENSHIFT_CRON_DIR/run/jobs.enabled
+    else
+        client_result "cron scheduling service is already disabled for gear $OPENSHIFT_GEAR_UUID"
+    fi
+}
+
+function restart() {
+    if _are_cronjobs_enabled; then
+        stop
+    fi
+    start
+}
+
+function status() {
+  if [ -d "$OPENSHIFT_REPO_DIR/.openshift/cron" ]; then
+      njobs=0
+      for freq in `cat $OPENSHIFT_CRON_DIR/configuration/frequencies`; do
+         if [ -d "$OPENSHIFT_REPO_DIR/.openshift/cron/$freq" ]; then
+            jobcnt=$(ls $OPENSHIFT_REPO_DIR/.openshift/cron/$freq | wc -l)
+            njobs=$((njobs + jobcnt))
+         fi
+      done
+      if test 0 -ge ${njobs:-0}; then
+         client_result "Application has no scheduled jobs for gear $OPENSHIFT_GEAR_UUID"
+      fi
+   else
+      client_result "Application has no scheduled jobs for gear $OPENSHIFT_GEAR_UUID"
+      client_result "   - Missing .openshift/cron/ directory."
+   fi
+
+   if _are_cronjobs_enabled; then
+      client_result "cron scheduling service is enabled for gear $OPENSHIFT_GEAR_UUID"
+   else
+      client_result "cron scheduling service is disabled for gear $OPENSHIFT_GEAR_UUID"
+   fi
+}
+
+case "$1" in
+  start)     start ;;
+  stop)      stop ;;
+  restart)   restart ;;
+  status)    status ;;
+  reload)    restart ;;
+  tidy)      tidy ;;
+  *)         exit 0
+esac

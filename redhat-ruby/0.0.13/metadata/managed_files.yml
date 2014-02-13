@@ -1,0 +1,20 @@
+---
+locked_files:
+- bin/
+- bin/*
+- metadata/
+- metadata/*
+- hooks/
+- hooks/*
+- conf/
+- conf/performance.conf.erb.hidden
+- etc/
+- etc/conf/
+- etc/conf/*
+- etc/conf.d/
+- etc/conf.d/openshift.conf
+- env/
+- env/OPENSHIFT_RUBY_DIR
+- env/OPENSHIFT_RUBY_LOG_DIR
+processed_templates:
+- 'etc/conf.d/*.erb'

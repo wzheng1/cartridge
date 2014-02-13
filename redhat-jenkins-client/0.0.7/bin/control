@@ -1,0 +1,33 @@
+#!/bin/bash -e
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+function post_receive() {
+  echo "Executing Jenkins build."
+  echo
+  echo "You can track your build at ${JENKINS_URL}job/${OPENSHIFT_APP_NAME}-build"
+  echo
+  if ${OPENSHIFT_JENKINS_CLIENT_DIR}/bin/jenkins_build ${OPENSHIFT_APP_NAME}-build
+  then
+      echo "New build has been deployed."
+  else
+      echo "!!!!!!!!"
+      echo "Deployment Halted!"
+      echo "If the build failed before the deploy step, your previous"
+      echo "build is still running.  Otherwise, your application may be"
+      echo "partially deployed or inaccessible."
+      echo "Fix the build and try again."
+      echo "!!!!!!!!"
+      exit 1
+  fi
+}
+
+function status() {
+  client_result "Jenkins builds are enabled."
+}
+
+case "$1" in
+  post-receive) post_receive ;;
+  status)       status ;;
+  *)         	  exit 0
+esac

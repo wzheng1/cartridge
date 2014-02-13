@@ -1,0 +1,12 @@
+#!/bin/bash -e
+
+# Create additional directories required by JENKINS
+mkdir -p ${OPENSHIFT_JENKINS_CLIENT_DIR}/{logs,data}
+
+
+
+
+
+
+
+
